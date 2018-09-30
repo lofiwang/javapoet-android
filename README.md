@@ -1,2 +1,2 @@
 # JavaPoet-Utils
-JavaPoet生成常用代码
+JavaPoet生成Android常用代码
