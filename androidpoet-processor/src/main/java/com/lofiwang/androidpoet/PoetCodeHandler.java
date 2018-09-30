@@ -26,13 +26,13 @@ public class PoetCodeHandler {
         String SUFFIX_BEAN = "Bean";
         String beanClazzName = PoetCodeUtil.createNewClazzName(targetClassElement, SUFFIX_BEAN);
         try {
-            createBeanFile(pkgName, beanClazzName, fieldMap, filer);
+            createJavaBeanFile(pkgName, beanClazzName, fieldMap, filer);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void createBeanFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
+    private static void createJavaBeanFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
         TypeSpec.Builder typeSpecB = TypeSpec.classBuilder(newClazzName);
         typeSpecB.addModifiers(Modifier.PUBLIC)
                 .addMethod(PoetCodeUtil.createConstructMethod(Modifier.PUBLIC));
