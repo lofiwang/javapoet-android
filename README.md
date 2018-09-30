@@ -68,7 +68,6 @@ typeSpecBuilder.addSuperinterface(parcelableType);
     public static MethodSpec createConstructMethod(Modifier... modifiers) {
         MethodSpec.Builder method = MethodSpec.constructorBuilder()
                 .addModifiers(modifiers);
-        return method.build();
     }
 ```
 3. construct(Parcel)
@@ -123,9 +122,4 @@ typeSpecBuilder.addSuperinterface(parcelableType);
             FieldSpec.Builder creatorField = FieldSpec.builder(creatorFieldType, "CREATOR")
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                     .initializer("$L", parcelableCreatorType);
-
-            typeSpecBuilder.addMethod(method.build());
-            typeSpecBuilder.addMethod(method1.build());
-            typeSpecBuilder.addMethod(method2.build());
-            typeSpecBuilder.addField(creatorField.build());
 ```
