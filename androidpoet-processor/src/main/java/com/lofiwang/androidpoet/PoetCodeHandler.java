@@ -1,5 +1,6 @@
 package com.lofiwang.androidpoet;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
@@ -30,11 +31,19 @@ public class PoetCodeHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        String SUFFIX_PARCELABLE = "Parcelable";
+        String parcelableClazzName = PoetCodeUtil.createNewClazzName(targetClassElement, SUFFIX_PARCELABLE);
+        try {
+            createParcelableFile(pkgName, parcelableClazzName, fieldMap, filer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void createJavaBeanFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
-        TypeSpec.Builder typeSpecB = TypeSpec.classBuilder(newClazzName);
-        typeSpecB.addModifiers(Modifier.PUBLIC)
+        TypeSpec.Builder typeSpecB = TypeSpec.classBuilder(newClazzName)
+                .addModifiers(Modifier.PUBLIC)
                 .addMethod(PoetCodeUtil.createConstructMethod(Modifier.PUBLIC));
 
         for (String field : fieldMap.keySet()) {
@@ -43,6 +52,19 @@ public class PoetCodeHandler {
                     .addMethod(PoetCodeUtil.createSet(field, fieldMap.get(field), Modifier.PUBLIC));
         }
         typeSpecB.addMethod(PoetCodeUtil.createToString(newClazzName, fieldMap, Modifier.PUBLIC));
+        TypeSpec typeSpec = typeSpecB.build();
+        JavaFile.builder(pkgName, typeSpec).build().writeTo(filer);
+    }
+
+    private static void createParcelableFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
+        ClassName newClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName);
+        TypeSpec.Builder typeSpecB = TypeSpec.classBuilder(newClazzName)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(PoetCodeUtil.createConstructMethod(Modifier.PUBLIC));
+        for (String field : fieldMap.keySet()) {
+            typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE);
+        }
+        PoetCodeUtil.Parcelable.createParcelable(newClassName, typeSpecB, fieldMap);
         TypeSpec typeSpec = typeSpecB.build();
         JavaFile.builder(pkgName, typeSpec).build().writeTo(filer);
     }
