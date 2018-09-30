@@ -4,7 +4,7 @@
 
 ##### 一. 生成JavaBean
 1. construct()
-``` android
+```android
 public static MethodSpec createConstructMethod(Modifier... modifiers) {
         MethodSpec.Builder method = MethodSpec.constructorBuilder()
                 .addModifiers(modifiers);
