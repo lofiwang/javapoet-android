@@ -2,7 +2,7 @@
 
 ### JavaPoet生成Android常用代码
 
-##### 一. 生成JavaBean
+##### [一. 生成JavaBean](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
 1. construct()
 ```
     public static MethodSpec createConstructMethod(Modifier... modifiers) {
