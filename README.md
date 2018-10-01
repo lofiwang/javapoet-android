@@ -1,8 +1,13 @@
 # JavaPoet-Utils
 
 ### JavaPoet生成Android常用代码
-原始代码
+1. 生成JavaBean
+2. 生成Parcelable
+3. 生成Builder
+4. 持续更新中...
+
 ```
+原始代码
 @PoetCode
 public class Person {
     private String name;
