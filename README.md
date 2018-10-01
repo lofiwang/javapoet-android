@@ -178,3 +178,50 @@ public class PersonParcelable implements Parcelable {}
         }
     };
 ```
+##### [三. 生成Builder](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
+1. Builder
+```
+        public static void createBuilder(String pkgName, String newClazzName, TypeSpec.Builder typeSpecBuilder, HashMap<String, TypeName> fieldMap) {
+            ClassName newClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName);
+            ClassName builderClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName, "Builder");
+            TypeSpec.Builder typeSpecB = TypeSpec.classBuilder("Builder")
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+            for (String field : fieldMap.keySet()) {
+                typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE)
+                        .addMethod(PoetCodeUtil.createSetReturn(builderClassName, field, fieldMap.get(field), Modifier.PUBLIC));
+            }
+            MethodSpec.Builder methodSpecB = MethodSpec.methodBuilder("create")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(newClassName)
+                    .addStatement("$T outClazz = new $T()", newClassName, newClassName);
+            for (String field : fieldMap.keySet()) {
+                methodSpecB.addStatement("outClazz.$L = $L", field, field);
+            }
+            methodSpecB.addStatement("return outClazz");
+            typeSpecB.addMethod(methodSpecB.build());
+            typeSpecBuilder.addType(typeSpecB.build());
+        }
+        --------------------------------------------------------------------------------
+  public static class Builder {
+    private String name;
+
+    private int age;
+
+    public Builder setName(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public Builder setAge(int age) {
+      this.age = age;
+      return this;
+    }
+
+    public PersonBuilderPattern create() {
+      PersonBuilderPattern outClazz = new PersonBuilderPattern();
+      outClazz.name = name;
+      outClazz.age = age;
+      return outClazz;
+    }
+  }
+```
