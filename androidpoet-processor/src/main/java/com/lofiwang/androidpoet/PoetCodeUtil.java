@@ -44,8 +44,8 @@ public class PoetCodeUtil {
         return originClazzName + suffix;
     }
 
-    public static ClassName createNewClazzType(String pkg, String newClazzName) {
-        return ClassName.get(pkg, newClazzName);
+    public static ClassName createNewClazzType(String pkg, String newClazzName, String... clazzNames) {
+        return ClassName.get(pkg, newClazzName, clazzNames);
     }
 
     public static String getTargetPkgName(TypeElement targetClass, Elements elementUtils) {
@@ -65,7 +65,7 @@ public class PoetCodeUtil {
                 .addModifiers(modifiers)
                 .returns(returnType)
                 .addParameter(fieldType, fieldName)
-                .addStatement("this." + fieldName + "=" + fieldName)
+                .addStatement("this.$L = $L", fieldName, fieldName)
                 .addStatement("return this");
         return method.build();
     }
@@ -75,7 +75,7 @@ public class PoetCodeUtil {
         MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
                 .addModifiers(modifiers)
                 .addParameter(fieldType, fieldName)
-                .addStatement("this." + fieldName + "=" + fieldName);
+                .addStatement("this.$L = $L", fieldName, fieldName);
         return method.build();
     }
 
@@ -179,6 +179,29 @@ public class PoetCodeUtil {
             typeSpecBuilder.addMethod(method1.build());
             typeSpecBuilder.addMethod(method2.build());
             typeSpecBuilder.addField(creatorField.build());
+        }
+    }
+
+    public static class Builder {
+        public static void createBuilder(String pkgName, String newClazzName, TypeSpec.Builder typeSpecBuilder, HashMap<String, TypeName> fieldMap) {
+            ClassName newClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName);
+            ClassName builderClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName, "Builder");
+            TypeSpec.Builder typeSpecB = TypeSpec.classBuilder("Builder")
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+            for (String field : fieldMap.keySet()) {
+                typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE)
+                        .addMethod(PoetCodeUtil.createSetReturn(builderClassName, field, fieldMap.get(field), Modifier.PUBLIC));
+            }
+            MethodSpec.Builder methodSpecB = MethodSpec.methodBuilder("create")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(newClassName)
+                    .addStatement("$T outClazz = new $T()", newClassName, newClassName);
+            for (String field : fieldMap.keySet()) {
+                methodSpecB.addStatement("outClazz.$L = $L", field, field);
+            }
+            methodSpecB.addStatement("return outClazz");
+            typeSpecB.addMethod(methodSpecB.build());
+            typeSpecBuilder.addType(typeSpecB.build());
         }
     }
 }

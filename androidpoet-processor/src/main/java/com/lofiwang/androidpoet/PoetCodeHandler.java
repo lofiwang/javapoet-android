@@ -39,6 +39,14 @@ public class PoetCodeHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        String SUFFIX_BUILDER_PATTERN = "BuilderPattern";
+        String BuilderPatternClazzName = PoetCodeUtil.createNewClazzName(targetClassElement, SUFFIX_BUILDER_PATTERN);
+        try {
+            createBuilderPatternFile(pkgName, BuilderPatternClazzName, fieldMap, filer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void createJavaBeanFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
@@ -65,6 +73,20 @@ public class PoetCodeHandler {
             typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE);
         }
         PoetCodeUtil.Parcelable.createParcelable(newClassName, typeSpecB, fieldMap);
+        TypeSpec typeSpec = typeSpecB.build();
+        JavaFile.builder(pkgName, typeSpec).build().writeTo(filer);
+    }
+
+    private static void createBuilderPatternFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
+        TypeSpec.Builder typeSpecB = TypeSpec.classBuilder(newClazzName)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(PoetCodeUtil.createConstructMethod(Modifier.PUBLIC));
+        for (String field : fieldMap.keySet()) {
+            typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE)
+                    .addMethod(PoetCodeUtil.createGet(field, fieldMap.get(field), Modifier.PUBLIC))
+                    .addMethod(PoetCodeUtil.createSet(field, fieldMap.get(field), Modifier.PUBLIC));
+        }
+        PoetCodeUtil.Builder.createBuilder(pkgName,newClazzName, typeSpecB, fieldMap);
         TypeSpec typeSpec = typeSpecB.build();
         JavaFile.builder(pkgName, typeSpec).build().writeTo(filer);
     }
