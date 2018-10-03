@@ -1,4 +1,4 @@
-# JavaPoet-Utils
+# javapoet-android
 
 ### JavaPoet生成Android常用代码
 1. [生成JavaBean]()
