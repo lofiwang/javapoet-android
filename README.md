@@ -4,7 +4,8 @@
 1. [生成JavaBean]()
 2. [生成Parcelable]()
 3. [生成Builder]()
-4. 持续更新中...
+4. [生成PcsBean]()
+5. 持续更新中...
 
 ```
 原始代码
@@ -228,5 +229,79 @@ public class PersonParcelable implements Parcelable {}
       outClazz.age = age;
       return outClazz;
     }
+  }
+```
+##### [四. 生成PcsBean](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
+1. field
+```
+        public static FieldSpec createPcsField() {
+            FieldSpec.Builder pcsField = FieldSpec.builder(PropertyChangeSupport.class, "pcs")
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .initializer("new $T(this)", PropertyChangeSupport.class);
+            return pcsField.build();
+        }
+        --------------------------------------------------------------------------------
+  private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+```
+2. get()
+```
+    public static MethodSpec createGet(String fieldName, TypeName fieldType, Modifier... modifiers) {
+        String methodName = "get" + upperFirstChar(fieldName);
+        MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
+                .addModifiers(modifiers)
+                .returns(fieldType)
+                .addStatement("return " + fieldName);
+        return method.build();
+    }
+    --------------------------------------------------------------------------------
+    public String getName() {
+        return name;
+    }
+```
+3. set()
+```
+        public static MethodSpec createPcsSet(String fieldName, TypeName fieldType, Modifier... modifiers) {
+            String methodName = "set" + upperFirstChar(fieldName);
+            MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(modifiers)
+                    .addParameter(fieldType, fieldName)
+                    .addStatement("$T old$L = this.$L",fieldType,fieldName,fieldName)
+                    .addStatement("this.$L = $L", fieldName, fieldName)
+                    .addStatement("this.pcs.firePropertyChange($S,old$L,$L)",fieldName,fieldName,fieldName);
+            return method.build();
+        }
+        --------------------------------------------------------------------------------
+  public void setName(String name) {
+    String oldname = this.name;
+    this.name = name;
+    this.pcs.firePropertyChange("name",oldname,name);
+  }
+```
+4. add listener
+```
+        public static MethodSpec createAddListenerMethod() {
+            MethodSpec.Builder pcsMethod = MethodSpec.methodBuilder("addPropertyChangeListener")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(PropertyChangeListener.class,"listener")
+                    .addStatement("this.pcs.addPropertyChangeListener(listener)");
+            return pcsMethod.build();
+        }
+        --------------------------------------------------------------------------------
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.addPropertyChangeListener(listener);
+  }
+```
+5. remove listener
+```
+        public static MethodSpec createRemoveListenerMethod() {
+            MethodSpec.Builder pcsMethod = MethodSpec.methodBuilder("removePropertyChangeListener")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(PropertyChangeListener.class,"listener")
+                    .addStatement("this.pcs.removePropertyChangeListener(listener)");
+            return pcsMethod.build();
+        }
+        --------------------------------------------------------------------------------
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.removePropertyChangeListener(listener);
   }
 ```
