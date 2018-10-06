@@ -1,10 +1,10 @@
 # javapoet-android
 
 ### JavaPoet生成Android常用代码
-1. [生成JavaBean]()
-2. [生成Parcelable]()
-3. [生成Builder]()
-4. [生成PcsBean(PropertyChangeSupport)]()
+1. [生成JavaBean](https://github.com/lofiwang/javapoet-android)
+2. [生成Parcelable](https://github.com/lofiwang/javapoet-android)
+3. [生成Builder](https://github.com/lofiwang/javapoet-android)
+4. [生成PcsBean(PropertyChangeSupport)](https://github.com/lofiwang/javapoet-android)
 5. 持续更新中...
 
 ```
