@@ -47,6 +47,14 @@ public class PoetCodeHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        String SUFFIX_PCS_BEAN = "PcsBean";
+        String PcsBeanClazzName = PoetCodeUtil.createNewClazzName(targetClassElement, SUFFIX_PCS_BEAN);
+        try {
+            createPcsBeanFile(pkgName, PcsBeanClazzName, fieldMap, filer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void createJavaBeanFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
@@ -86,7 +94,23 @@ public class PoetCodeHandler {
                     .addMethod(PoetCodeUtil.createGet(field, fieldMap.get(field), Modifier.PUBLIC))
                     .addMethod(PoetCodeUtil.createSet(field, fieldMap.get(field), Modifier.PUBLIC));
         }
-        PoetCodeUtil.Builder.createBuilder(pkgName,newClazzName, typeSpecB, fieldMap);
+        typeSpecB.addType(PoetCodeUtil.Builder.createBuilder(pkgName, newClazzName, fieldMap));
+        TypeSpec typeSpec = typeSpecB.build();
+        JavaFile.builder(pkgName, typeSpec).build().writeTo(filer);
+    }
+
+    private static void createPcsBeanFile(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap, Filer filer) throws IOException {
+        TypeSpec.Builder typeSpecB = TypeSpec.classBuilder(newClazzName)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(PoetCodeUtil.createConstructMethod(Modifier.PUBLIC));
+        for (String field : fieldMap.keySet()) {
+            typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE)
+                    .addMethod(PoetCodeUtil.createGet(field, fieldMap.get(field), Modifier.PUBLIC))
+                    .addMethod(PoetCodeUtil.createPcsSet(field, fieldMap.get(field), Modifier.PUBLIC));
+        }
+        typeSpecB.addField(PoetCodeUtil.PcsBean.createPcsField());
+        typeSpecB.addMethod(PoetCodeUtil.PcsBean.createAddListenerMethod());
+        typeSpecB.addMethod(PoetCodeUtil.PcsBean.createRemoveListenerMethod());
         TypeSpec typeSpec = typeSpecB.build();
         JavaFile.builder(pkgName, typeSpec).build().writeTo(filer);
     }

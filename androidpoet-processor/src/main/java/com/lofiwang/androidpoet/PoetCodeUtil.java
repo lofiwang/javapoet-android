@@ -8,6 +8,8 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 
 import javax.lang.model.element.Element;
@@ -76,6 +78,17 @@ public class PoetCodeUtil {
                 .addModifiers(modifiers)
                 .addParameter(fieldType, fieldName)
                 .addStatement("this.$L = $L", fieldName, fieldName);
+        return method.build();
+    }
+
+    public static MethodSpec createPcsSet(String fieldName, TypeName fieldType, Modifier... modifiers) {
+        String methodName = "set" + upperFirstChar(fieldName);
+        MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
+                .addModifiers(modifiers)
+                .addParameter(fieldType, fieldName)
+                .addStatement("$T old$L = this.$L",fieldType,fieldName,fieldName)
+                .addStatement("this.$L = $L", fieldName, fieldName)
+                .addStatement("this.pcs.firePropertyChange($S,old$L,$L)",fieldName,fieldName,fieldName);
         return method.build();
     }
 
@@ -183,7 +196,7 @@ public class PoetCodeUtil {
     }
 
     public static class Builder {
-        public static void createBuilder(String pkgName, String newClazzName, TypeSpec.Builder typeSpecBuilder, HashMap<String, TypeName> fieldMap) {
+        public static TypeSpec createBuilder(String pkgName, String newClazzName, HashMap<String, TypeName> fieldMap) {
             ClassName newClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName);
             ClassName builderClassName = PoetCodeUtil.createNewClazzType(pkgName, newClazzName, "Builder");
             TypeSpec.Builder typeSpecB = TypeSpec.classBuilder("Builder")
@@ -201,7 +214,32 @@ public class PoetCodeUtil {
             }
             methodSpecB.addStatement("return outClazz");
             typeSpecB.addMethod(methodSpecB.build());
-            typeSpecBuilder.addType(typeSpecB.build());
+            return typeSpecB.build();
+        }
+    }
+
+    public static class PcsBean {
+        public static FieldSpec createPcsField() {
+            FieldSpec.Builder pcsField = FieldSpec.builder(PropertyChangeSupport.class, "pcs")
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .initializer("new $T(this)", PropertyChangeSupport.class);
+            return pcsField.build();
+        }
+
+        public static MethodSpec createAddListenerMethod() {
+            MethodSpec.Builder pcsMethod = MethodSpec.methodBuilder("addPropertyChangeListener")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(PropertyChangeListener.class,"listener")
+                    .addStatement("this.pcs.addPropertyChangeListener(listener)");
+            return pcsMethod.build();
+        }
+
+        public static MethodSpec createRemoveListenerMethod() {
+            MethodSpec.Builder pcsMethod = MethodSpec.methodBuilder("removePropertyChangeListener")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(PropertyChangeListener.class,"listener")
+                    .addStatement("this.pcs.removePropertyChangeListener(listener)");
+            return pcsMethod.build();
         }
     }
 }
