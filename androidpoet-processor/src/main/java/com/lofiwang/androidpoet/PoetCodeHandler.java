@@ -106,7 +106,7 @@ public class PoetCodeHandler {
         for (String field : fieldMap.keySet()) {
             typeSpecB.addField(fieldMap.get(field), field, Modifier.PRIVATE)
                     .addMethod(PoetCodeUtil.createGet(field, fieldMap.get(field), Modifier.PUBLIC))
-                    .addMethod(PoetCodeUtil.createPcsSet(field, fieldMap.get(field), Modifier.PUBLIC));
+                    .addMethod(PoetCodeUtil.PcsBean.createPcsSet(field, fieldMap.get(field), Modifier.PUBLIC));
         }
         typeSpecB.addField(PoetCodeUtil.PcsBean.createPcsField());
         typeSpecB.addMethod(PoetCodeUtil.PcsBean.createAddListenerMethod());

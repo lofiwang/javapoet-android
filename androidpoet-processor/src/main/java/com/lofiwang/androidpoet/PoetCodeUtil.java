@@ -81,17 +81,6 @@ public class PoetCodeUtil {
         return method.build();
     }
 
-    public static MethodSpec createPcsSet(String fieldName, TypeName fieldType, Modifier... modifiers) {
-        String methodName = "set" + upperFirstChar(fieldName);
-        MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
-                .addModifiers(modifiers)
-                .addParameter(fieldType, fieldName)
-                .addStatement("$T old$L = this.$L",fieldType,fieldName,fieldName)
-                .addStatement("this.$L = $L", fieldName, fieldName)
-                .addStatement("this.pcs.firePropertyChange($S,old$L,$L)",fieldName,fieldName,fieldName);
-        return method.build();
-    }
-
     public static MethodSpec createGet(String fieldName, TypeName fieldType, Modifier... modifiers) {
         String methodName = "get" + upperFirstChar(fieldName);
         MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
@@ -224,6 +213,17 @@ public class PoetCodeUtil {
                     .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                     .initializer("new $T(this)", PropertyChangeSupport.class);
             return pcsField.build();
+        }
+
+        public static MethodSpec createPcsSet(String fieldName, TypeName fieldType, Modifier... modifiers) {
+            String methodName = "set" + upperFirstChar(fieldName);
+            MethodSpec.Builder method = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(modifiers)
+                    .addParameter(fieldType, fieldName)
+                    .addStatement("$T old$L = this.$L",fieldType,fieldName,fieldName)
+                    .addStatement("this.$L = $L", fieldName, fieldName)
+                    .addStatement("this.pcs.firePropertyChange($S,old$L,$L)",fieldName,fieldName,fieldName);
+            return method.build();
         }
 
         public static MethodSpec createAddListenerMethod() {
