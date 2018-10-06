@@ -4,7 +4,7 @@
 1. [生成JavaBean]()
 2. [生成Parcelable]()
 3. [生成Builder]()
-4. [生成PcsBean(PropertyChangeSupport Java Bean)]()
+4. [生成PcsBean(PropertyChangeSupport)]()
 5. 持续更新中...
 
 ```
