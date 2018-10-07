@@ -15,7 +15,7 @@ public class Person {
 }
 ```
 
-##### [一. 生成JavaBean](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
+##### [一. 生成JavaBean](https://github.com/lofiwang/javapoet-android/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
 1. construct()
 ```
     public static MethodSpec createConstructMethod(Modifier... modifiers) {
@@ -83,7 +83,7 @@ public class Person {
     }
 ```
 
-##### [二. 生成Parcelable](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
+##### [二. 生成Parcelable](https://github.com/lofiwang/javapoet-android/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
 1. implements Parcelable
 ```
 ClassName parcelableType = ClassName.get("android.os", "Parcelable");
@@ -184,7 +184,7 @@ public class PersonParcelable implements Parcelable {}
         }
     };
 ```
-##### [三. 生成Builder](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
+##### [三. 生成Builder](https://github.com/lofiwang/javapoet-android/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
 1. Builder
 ```
         public static void createBuilder(String pkgName, String newClazzName, TypeSpec.Builder typeSpecBuilder, HashMap<String, TypeName> fieldMap) {
@@ -231,7 +231,7 @@ public class PersonParcelable implements Parcelable {}
     }
   }
 ```
-##### [四. 生成PcsBean](https://github.com/chunshengwang/JavaPoet-Utils/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
+##### [四. 生成PcsBean](https://github.com/lofiwang/javapoet-android/blob/master/androidpoet-processor/src/main/java/com/lofiwang/androidpoet/PoetCodeHandler.java)
 1. field
 ```
         public static FieldSpec createPcsField() {
