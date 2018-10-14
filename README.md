@@ -1,4 +1,4 @@
-# javapoet-android [square JavaPoet中文翻译](https://github.com/lofiwang/javapoet-android/wiki/javapoet-android-home)
+# javapoet-android 基于square [JavaPoet](https://github.com/square/javapoet)[中文翻译](https://github.com/lofiwang/javapoet-android/wiki/javapoet-android-home)
 
 ### JavaPoet生成Android常用代码
 1. [生成JavaBean](https://github.com/lofiwang/javapoet-android)
