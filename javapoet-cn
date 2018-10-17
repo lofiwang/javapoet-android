@@ -1,16 +1,11 @@
-JavaPoet [view on GitHub](https://github.com/square/javapoet)
+javapoet-android 基于 [square javapoet](https://github.com/square/javapoet)
 ========
 
-`JavaPoet` is a Java API for generating `.java` source files.
+'JavaPoet' 是一个使用Java API生成 '.java' 源文件的库，在使用注解处理器或者操作元数据文件时（数据库模式，协议格式等），动态生成源文件非常有用。通过生成代码，你不用写模板代码也能保证元数据的唯一来源。
 
-Source file generation can be useful when doing things such as annotation processing or interacting
-with metadata files (e.g., database schemas, protocol formats). By generating code, you eliminate
-the need to write boilerplate while also keeping a single source of truth for the metadata.
+### 例如：
 
-
-### Example
-
-Here's a (boring) `HelloWorld` class:
+这是个 `HelloWorld` 类：
 
 ```java
 package com.example.helloworld;
@@ -22,7 +17,7 @@ public final class HelloWorld {
 }
 ```
 
-And this is the (exciting) code to generate it with JavaPoet:
+这是用JavaPoet生成 `HelloWorld` 类的代码：
 
 ```java
 MethodSpec main = MethodSpec.methodBuilder("main")
@@ -43,24 +38,17 @@ JavaFile javaFile = JavaFile.builder("com.example.helloworld", helloWorld)
 javaFile.writeTo(System.out);
 ```
 
-To declare the main method, we've created a `MethodSpec` "main" configured with modifiers, return
-type, parameters and code statements. We add the main method to a `HelloWorld` class, and then add
-that to a `HelloWorld.java` file.
+首先创建 `MethodSpec`， 定义main方法，并设置修饰符，返回类型，参数，方法体，然后把 main 方法添加到 `HelloWorld` 类里并写入到 `HelloWorld.java` 文件。
 
-In this case we write the file to `System.out`, but we could also get it as a string
-(`JavaFile.toString()`) or write it to the file system (`JavaFile.writeTo()`).
+在这个例子里，我们把文件写到`System.out`,但是我们也能获取文件内容(`JavaFile.toString()`)或者把文件写入到文件系统(`JavaFile.writeTo()`)。
 
-The [Javadoc][javadoc] catalogs the complete JavaPoet API, which we explore below.
+[Javadoc][javadoc] 记录了完整的 JavaPoet API，这些API我们接下来进行探讨。
 
-### Code & Control Flow
+### 编码 & 控制流程
+大多数JavaPoet API只是简单创建临时Java对象，而且使用了builder模式，方法链式调用和可变参数等便捷编码方式。
+JavaPoet 用 `TypeSpec` 表示类和接口, `FieldSpec` 表示字段, `MethodSpec` 表示方法（注：构造方法也是方法）, `ParameterSpec` 表示参数， `AnnotationSpec` 表示注解。
 
-Most of JavaPoet's API uses plain old immutable Java objects. There's also builders, method chaining
-and varargs to make the API friendly. JavaPoet offers models for classes & interfaces (`TypeSpec`),
-fields (`FieldSpec`), methods & constructors (`MethodSpec`), parameters (`ParameterSpec`) and
-annotations (`AnnotationSpec`).
-
-But the _body_ of methods and constructors is not modeled. There's no expression class, no
-statement class or syntax tree nodes. Instead, JavaPoet uses strings for code blocks:
+使用字串来表示代码块，表示方法体和函数体。
 
 ```java
 MethodSpec main = MethodSpec.methodBuilder("main")
@@ -72,7 +60,7 @@ MethodSpec main = MethodSpec.methodBuilder("main")
     .build();
 ```
 
-Which generates this:
+生成代码如下:
 
 ```java
 void main() {
@@ -83,10 +71,7 @@ void main() {
 }
 ```
 
-The manual semicolons, line wrapping, and indentation are tedious and so JavaPoet offers APIs to
-make it easier. There's `addStatement()` which takes care of semicolons and newline, and
-`beginControlFlow()` + `endControlFlow()` which are used together for braces, newlines, and
-indentation:
+手工输入分号，换行和缩进非常繁琐，所以JavaPoet API提供了更简单的方式。`addStatement()`提供分号和换行，`beginControlFlow()` + `endControlFlow()`成对使用提供开始结束括弧，换行和缩进。
 
 ```java
 MethodSpec main = MethodSpec.methodBuilder("main")
@@ -97,8 +82,7 @@ MethodSpec main = MethodSpec.methodBuilder("main")
     .build();
 ```
 
-This example is lame because the generated code is constant! Suppose instead of just adding 0 to 10,
-we want to make the operation and range configurable. Here's a method that generates a method:
+这个例子没有什么用，因为for循环里都是常量写死了范围。请看下面的例子，循环范围可变且可操作：
 
 ```java
 private MethodSpec computeRange(String name, int from, int to, String op) {
@@ -113,7 +97,7 @@ private MethodSpec computeRange(String name, int from, int to, String op) {
 }
 ```
 
-And here's what we get when we call `computeRange("multiply10to20", 10, 20, "*")`:
+调用以上JavaPoet方法`computeRange("multiply10to20", 10, 20, "*")`，生成如下代码:
 
 ```java
 int multiply10to20() {
@@ -125,16 +109,12 @@ int multiply10to20() {
 }
 ```
 
-Methods generating methods! And since JavaPoet generates source instead of bytecode, you can
-read through it to make sure it's right.
+JavaPoet生成可阅读的源代码而非字节码，所以你可以校对是否正确。
 
 
-### $L for Literals
+### $L 用于字面量（Literals）
 
-The string-concatenation in calls to `beginControlFlow()` and `addStatement` is distracting. Too
-many operators. To address this, JavaPoet offers a syntax inspired-by but incompatible-with
-[`String.format()`][formatter]. It accepts **`$L`** to emit a **literal** value in the output. This
-works just like `Formatter`'s `%s`:
+JavaPoet 提供的独有的语法， `$L`表示取变量字面量值替换之（字面量概念google之）:
 
 ```java
 private MethodSpec computeRange(String name, int from, int to, String op) {
@@ -149,14 +129,9 @@ private MethodSpec computeRange(String name, int from, int to, String op) {
 }
 ```
 
-Literals are emitted directly to the output code with no escaping. Arguments for literals may be
-strings, primitives, and a few JavaPoet types described below.
+### $S 用于字符串
 
-### $S for Strings
-
-When emitting code that includes string literals, we can use **`$S`** to emit a **string**, complete
-with wrapping quotation marks and escaping. Here's a program that emits 3 methods, each of which
-returns its own name:
+`$S`表示取变量字面量值加双引号后替换之，如下:
 
 ```java
 public static void main(String[] args) throws Exception {
@@ -181,7 +156,7 @@ private static MethodSpec whatsMyName(String name) {
 }
 ```
 
-In this case, using `$S` gives us quotation marks:
+在这个例子里，使用`$S`会自动加上引号：
 
 ```java
 public final class HelloWorld {
@@ -199,11 +174,9 @@ public final class HelloWorld {
 }
 ```
 
-### $T for Types
+### $T 用于类型
 
-We Java programmers love our types: they make our code easier to understand. And JavaPoet is on
-board. It has rich built-in support for types, including automatic generation of `import`
-statements. Just use **`$T`** to reference **types**:
+如何在生成代码时自动去`import`类型，仅仅需要使用`$T`来关联类型：
 
 ```java
 MethodSpec today = MethodSpec.methodBuilder("today")
@@ -222,7 +195,7 @@ JavaFile javaFile = JavaFile.builder("com.example.helloworld", helloWorld)
 javaFile.writeTo(System.out);
 ```
 
-That generates the following `.java` file, complete with the necessary `import`:
+看如下代码，`.java`文件里自动加入了需要导入的`Data`类：
 
 ```java
 package com.example.helloworld;
@@ -236,9 +209,7 @@ public final class HelloWorld {
 }
 ```
 
-We passed `Date.class` to reference a class that just-so-happens to be available when we're
-generating code. This doesn't need to be the case. Here's a similar example, but this one
-references a class that doesn't exist (yet):
+上个例子的`Date.class`是已经存在的，那么如果我们需要关联一个当前环境不存在类如何做？看下面：
 
 ```java
 ClassName hoverboard = ClassName.get("com.mattel", "Hoverboard");
@@ -249,7 +220,7 @@ MethodSpec today = MethodSpec.methodBuilder("tomorrow")
     .build();
 ```
 
-And that not-yet-existent class is imported as well:
+这个类还不存在但是依然会导入：
 
 ```java
 package com.example.helloworld;
@@ -263,10 +234,8 @@ public final class HelloWorld {
 }
 ```
 
-The `ClassName` type is very important, and you'll need it frequently when you're using JavaPoet.
-It can identify any _declared_ class. Declared types are just the beginning of Java's rich type
-system: we also have arrays, parameterized types, wildcard types, and type variables. JavaPoet has
-classes for building each of these:
+`ClassName`非常重要，在使用JavaPoet的时候会经常用到。
+JavaPoet可以表示任何_.class_类型外，还可以表示数组，参数类型，通配符类型，类型变量，如下：
 
 ```java
 ClassName hoverboard = ClassName.get("com.mattel", "Hoverboard");
@@ -284,7 +253,7 @@ MethodSpec beyond = MethodSpec.methodBuilder("beyond")
     .build();
 ```
 
-JavaPoet will decompose each type and import its components where possible.
+JavaPoet将会分解每个类型，且尽可能导入所有需要的类型。
 
 ```java
 package com.example.helloworld;
@@ -304,10 +273,9 @@ public final class HelloWorld {
 }
 ```
 
-#### Import static
+#### 导入静态类型（Import static）
 
-JavaPoet supports `import static`. It does it via explicitly collecting type member names. Let's
-enhance the previous example with some static sugar:
+JavaPoet 支持 `import static`. 通过明确的指定类型名，静态导入的方式修改上面的代码如下:
 
 ```java
 ...
@@ -334,8 +302,7 @@ JavaFile.builder("com.example.helloworld", hello)
     .build();
 ```
 
-JavaPoet will first add your `import static` block to the file as configured, match and mangle
-all calls accordingly and also import all other types as needed.
+JavaPoet首先会添加`import static`，然后再添加其它需要的类型。
 
 ```java
 package com.example.helloworld;
@@ -360,10 +327,9 @@ class HelloWorld {
 }
 ```
 
-### $N for Names
+### $N 用于名称
 
-Generated code is often self-referential. Use **`$N`** to refer to another generated declaration by
-its name. Here's a method that calls another:
+生成的代码一般都会相互关联。使用**`$N`**来关联其它声明。如下生成两个方法，其一调用另一个方法：
 
 ```java
 public String byteToHex(int b) {
@@ -378,8 +344,7 @@ public char hexDigit(int i) {
 }
 ```
 
-When generating the code above, we pass the `hexDigit()` method as an argument to the `byteToHex()`
-method using `$N`:
+当我们生成上面的代码时，传递`hexDigit`方法来替换`$N`。
 
 ```java
 MethodSpec hexDigit = MethodSpec.methodBuilder("hexDigit")
@@ -398,34 +363,29 @@ MethodSpec byteToHex = MethodSpec.methodBuilder("byteToHex")
     .build();
 ```
 
-### Code block format strings
+### 代码块格式化字符串
 
-Code blocks may specify the values for their placeholders in a few ways. Only one style may be used
-for each operation on a code block.
+代码块有多种方式为占位符指定值。
 
-#### Relative Arguments
+#### 相对参数
 
-Pass an argument value for each placeholder in the format string to `CodeBlock.add()`. In each
-example, we generate code to say "I ate 3 tacos"
+给每个占位符传递一个参数，个数和顺序一一对应。在每个例子中，我们生成的代码将输出为"I ate 3 tacos"：
 
 ```java
 CodeBlock.builder().add("I ate $L $L", 3, "tacos")
 ```
 
-#### Positional Arguments
+#### 指定位置的参数
 
-Place an integer index (1-based) before the placeholder in the format string to specify which
- argument to use.
+如下在占位符前加入整数值来指定使用哪个参数，整数值从1开始。
 
 ```java
 CodeBlock.builder().add("I ate $2L $1L", "tacos", 3)
 ```
 
-#### Named Arguments
+#### 指定名字的参数
 
-Use the syntax `$argumentName:X` where `X` is the format character and call `CodeBlock.addNamed()`
-with a map containing all argument keys in the format string. Argument names use characters in
-`a-z`, `A-Z`, `0-9`, and `_`, and must start with a lowercase character.
+使用语法`$argumentName:X`来指定参数名字，`X`是格式化字符，`argumentName`是关联到一个 map 里的。参数名使用字符`a-z`, `A-Z`, `0-9`, and `_`，且必须以小写字符开头。
 
 ```java
 Map<String, Object> map = new LinkedHashMap<>();
@@ -434,10 +394,9 @@ map.put("count", 3);
 CodeBlock.builder().addNamed("I ate $count:L $food:L", map)
 ```
 
-### Methods
+### 方法
 
-All of the above methods have a code body. Use `Modifiers.ABSTRACT` to get a method without any
-body. This is only legal if the enclosing class is either abstract or an interface.
+上面所有的方法都有方法体。可以使用 `Modifiers.ABSTRACT`让方法没有方法体，但是只有在封装类是抽象类或接口。
 
 ```java
 MethodSpec flux = MethodSpec.methodBuilder("flux")
@@ -450,7 +409,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .build();
 ```
 
-Which generates this:
+生成代码如下:
 
 ```java
 public abstract class HelloWorld {
@@ -458,17 +417,13 @@ public abstract class HelloWorld {
 }
 ```
 
-The other modifiers work where permitted. Note that when specifying modifiers, JavaPoet uses
-[`javax.lang.model.element.Modifier`][modifier], a class that is not available on Android. This
-limitation applies to code-generating-code only; the output code runs everywhere: JVMs, Android,
-and GWT.
+JavaPoet 使用[`javax.lang.model.element.Modifier`][modifier]指定修饰符，但是这个类在Android上是不可用的。使用JavaPoet一般是创建Jar包，这样就可以正常使用`javax.lang.model.element.Modifier`类，生成的代码是可以在任何地方运行的：JVMs，Android和GWT。
 
-Methods also have parameters, exceptions, varargs, Javadoc, annotations, type variables, and a
-return type. All of these are configured with `MethodSpec.Builder`.
+方法也有参数，异常，可变参数，Java文档，注解，类型变量和返回类型，所有这些都在`MethodSpec.Builder`里配置。
 
-### Constructors
+### 构造器
 
-`MethodSpec` is a slight misnomer; it can also be used for constructors:
+`MethodSpec` 也能用于创建构造函数：
 
 ```java
 MethodSpec flux = MethodSpec.constructorBuilder()
@@ -484,7 +439,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .build();
 ```
 
-Which generates this:
+生成代码如下：
 
 ```java
 public class HelloWorld {
@@ -496,13 +451,11 @@ public class HelloWorld {
 }
 ```
 
-For the most part, constructors work just like methods. When emitting code, JavaPoet will place
-constructors before methods in the output file.
+生成源文件时，JavaPoet 会把构造函数放在普通方法之前输出到文件。
 
-### Parameters
+### 参数
 
-Declare parameters on methods and constructors with either `ParameterSpec.builder()` or
-`MethodSpec`'s convenient `addParameter()` API:
+在方法或构造函数上声明参数时，可以使用`ParameterSpec.builder()`或`MethodSpec`的API`addParameter()`：
 
 ```java
 ParameterSpec android = ParameterSpec.builder(String.class, "android")
@@ -515,19 +468,18 @@ MethodSpec welcomeOverlords = MethodSpec.methodBuilder("welcomeOverlords")
     .build();
 ```
 
-Though the code above to generate `android` and `robot` parameters is different, the output is the
-same:
+上面代码我们使用了不同的方式创建了`android` 和`robot`参数，最终输出是一致的：
 
 ```java
 void welcomeOverlords(final String android, final String robot) {
 }
 ```
 
-The extended `Builder` form is necessary when the parameter has annotations (such as `@Nullable`).
+`Builder`方式创建参数还是很有必要的，比如说需要给参数添加注解（例如：`@Nullable`）。
 
-### Fields
+### 属性
 
-Like parameters, fields can be created either with builders or by using convenient helper methods:
+想创建参数一样，可以使用builder，也可以直接添加属性：
 
 ```java
 FieldSpec android = FieldSpec.builder(String.class, "android")
@@ -541,7 +493,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .build();
 ```
 
-Which generates:
+生成代码如下：
 
 ```java
 public class HelloWorld {
@@ -551,9 +503,7 @@ public class HelloWorld {
 }
 ```
 
-The extended `Builder` form is necessary when a field has Javadoc, annotations, or a field
-initializer. Field initializers use the same [`String.format()`][formatter]-like syntax as the code
-blocks above:
+`Builder`方式创建属性也是非常必要的，比如属性有Java文档，注解，属性初始化。
 
 ```java
 FieldSpec android = FieldSpec.builder(String.class, "android")
@@ -562,17 +512,15 @@ FieldSpec android = FieldSpec.builder(String.class, "android")
     .build();
 ```
 
-Which generates:
+生成代码如下：
 
 ```java
 private final String android = "Lollipop v." + 5.0;
 ```
 
-### Interfaces
+### 接口
 
-JavaPoet has no trouble with interfaces. Note that interface methods must always be `PUBLIC
-ABSTRACT` and interface fields must always be `PUBLIC STATIC FINAL`. These modifiers are necessary
-when defining the interface:
+JavaPoet 处理接口没有问题，我们知道接口方法必须是`PUBLIC ABSTRACT`，接口属性必须是`PUBLIC STATIC FINAL`。
 
 ```java
 TypeSpec helloWorld = TypeSpec.interfaceBuilder("HelloWorld")
@@ -587,8 +535,7 @@ TypeSpec helloWorld = TypeSpec.interfaceBuilder("HelloWorld")
     .build();
 ```
 
-But these modifiers are omitted when the code is generated. These are the defaults so we don't need
-to include them for `javac`'s benefit!
+但是在生成代码时这些修饰符都会被省略，因为这些修饰符接口默认就包含。
 
 ```java
 public interface HelloWorld {
@@ -598,9 +545,9 @@ public interface HelloWorld {
 }
 ```
 
-### Enums
+### 枚举
 
-Use `enumBuilder` to create the enum type, and `addEnumConstant()` for each value:
+使用`enumBuilder`创建一个枚举类型，`addEnumConstant()`添加值：
 
 ```java
 TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
@@ -611,7 +558,7 @@ TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
     .build();
 ```
 
-To generate this:
+生成代码如下：
 
 ```java
 public enum Roshambo {
@@ -623,8 +570,7 @@ public enum Roshambo {
 }
 ```
 
-Fancy enums are supported, where the enum values override methods or call a superclass constructor.
-Here's a comprehensive example:
+支持更负责的枚举，枚举值重写方法或调用父类构造函数：
 
 ```java
 TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
@@ -649,7 +595,7 @@ TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
     .build();
 ```
 
-Which generates this:
+生成代码如下：
 
 ```java
 public enum Roshambo {
@@ -672,10 +618,9 @@ public enum Roshambo {
 }
 ```
 
-### Anonymous Inner Classes
+### 匿名内部类
 
-In the enum code, we used `TypeSpec.anonymousInnerClass()`. Anonymous inner classes can also be used in
-code blocks. They are values that can be referenced with `$L`:
+在枚举代码中我们使用了`TypeSpec.anonymousInnerClass()`。匿名内部类也能用在代码块。匿名内部类可以使用`$L`来关联：
 
 ```java
 TypeSpec comparator = TypeSpec.anonymousClassBuilder("")
@@ -698,7 +643,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
     .build();
 ```
 
-This generates a method that contains a class that contains a method:
+生成代码如下：
 
 ```java
 void sortByLength(List<String> strings) {
@@ -710,16 +655,12 @@ void sortByLength(List<String> strings) {
   });
 }
 ```
-
-One particularly tricky part of defining anonymous inner classes is the arguments to the superclass
-constructor. In the above code we're passing the empty string for no arguments:
-`TypeSpec.anonymousClassBuilder("")`. To pass different parameters use JavaPoet's code block
-syntax with commas to separate arguments.
+匿名内部类比较棘手的部分是传递参数给父类构造函数。以上例子都传递了空的字符串表示没有参数：`TypeSpec.anonymousClassBuilder("")`。使用JavaPoet的代码块语法传递不同的参数，以逗号隔开。
 
 
-### Annotations
+### 注解
 
-Simple annotations are easy:
+添加注解非常简单：
 
 ```java
 MethodSpec toString = MethodSpec.methodBuilder("toString")
@@ -730,7 +671,7 @@ MethodSpec toString = MethodSpec.methodBuilder("toString")
     .build();
 ```
 
-Which generates this method with an `@Override` annotation:
+生成一个带`@Override`注解的方法：
 
 ```java
   @Override
@@ -739,7 +680,7 @@ Which generates this method with an `@Override` annotation:
   }
 ```
 
-Use `AnnotationSpec.builder()` to set properties on annotations:
+使用`AnnotationSpec.builder()`给注解设置属性：
 
 ```java
 MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
@@ -753,7 +694,7 @@ MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
     .build();
 ```
 
-Which generates this annotation with `accept` and `userAgent` properties:
+生成代码如下：
 
 ```java
 @Headers(
@@ -763,8 +704,7 @@ Which generates this annotation with `accept` and `userAgent` properties:
 LogReceipt recordEvent(LogRecord logRecord);
 ```
 
-When you get fancy, annotation values can be annotations themselves. Use `$L` for embedded
-annotations:
+更复杂的情况，注解嵌套，`$L`用于嵌套的注解：
 
 ```java
 MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
@@ -784,7 +724,7 @@ MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
     .build();
 ```
 
-Which generates this:
+生成代码如下：
 
 ```java
 @HeaderList({
@@ -794,12 +734,11 @@ Which generates this:
 LogReceipt recordEvent(LogRecord logRecord);
 ```
 
-Note that you can call `addMember()` multiple times with the same property name to populate a list
-of values for that property.
+你可以多次调用`addMember()`，传递相同的属性名来填充一个属性值列表。
 
-### Javadoc
+### Java文档
 
-Fields, methods and types can be documented with Javadoc:
+属性，方法和类型能使用Javadoc文档化：
 
 ```java
 MethodSpec dismiss = MethodSpec.methodBuilder("dismiss")
@@ -814,7 +753,7 @@ MethodSpec dismiss = MethodSpec.methodBuilder("dismiss")
     .build();
 ```
 
-Which generates this:
+生成代码如下：
 
 ```java
   /**
@@ -828,12 +767,12 @@ Which generates this:
   void dismiss(Message message);
 ```
 
-Use `$T` when referencing types in Javadoc to get automatic imports.
+Java文档里使用`$T`关联类型可以自动导入。
 
-Download
+下载
 --------
 
-Download [the latest .jar][dl] or depend via Maven:
+下载[the latest .jar][dl] 或者通过Maven依赖:
 ```xml
 <dependency>
   <groupId>com.squareup</groupId>
@@ -841,12 +780,12 @@ Download [the latest .jar][dl] or depend via Maven:
   <version>1.11.1</version>
 </dependency>
 ```
-or Gradle:
+或者 Gradle:
 ```groovy
 compile 'com.squareup:javapoet:1.11.1'
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+开发版本快照 [Sonatype's `snapshots` repository][snap].
 
 
 
