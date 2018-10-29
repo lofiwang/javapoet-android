@@ -6,7 +6,6 @@
 2. [生成Parcelable](https://github.com/lofiwang/javapoet-android)
 3. [生成Builder](https://github.com/lofiwang/javapoet-android)
 4. [生成PcsBean(PropertyChangeSupport)](https://github.com/lofiwang/javapoet-android)
-5. 持续更新中...
 
 ```
 原始代码
