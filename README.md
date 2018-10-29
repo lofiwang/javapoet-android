@@ -1,6 +1,6 @@
 # javapoet-android 基于square JavaPoet
 [JavaPoet GitHub](https://github.com/square/javapoet)<br>
-[JavaPoet 中文翻译](https://github.com/lofiwang/javapoet-android/wiki/javapoet-android-home)<br>
+[JavaPoet 中文翻译](https://github.com/lofiwang/javapoet-android/wiki/javapoet%E5%9F%BA%E7%A1%80%E7%94%A8%E6%B3%95)<br>
 ### JavaPoet生成Android常用代码
 1. [生成JavaBean](https://github.com/lofiwang/javapoet-android)
 2. [生成Parcelable](https://github.com/lofiwang/javapoet-android)
